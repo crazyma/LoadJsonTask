@@ -50,6 +50,12 @@ public class Main extends Activity {
 			// TODO Auto-generated method stub
 			
 		}
+
+		@Override
+		public void onFinish(Object resultObject) {
+			// TODO Auto-generated method stub
+			
+		}
     	
     };
     

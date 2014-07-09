@@ -97,6 +97,11 @@ public class Main extends Activity {
 			text.setText(result);
 		}
 		
+		@Override
+		public void onFinish(Object resultObject){
+			// TODO Auto-generated method stub
+		}
+		
 	};
 
 }

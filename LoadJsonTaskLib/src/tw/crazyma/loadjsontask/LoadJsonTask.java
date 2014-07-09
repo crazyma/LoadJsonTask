@@ -20,6 +20,8 @@ import org.json.JSONObject;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 	final private String tag = "crazyma";
 	
@@ -93,7 +95,7 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 					}else{
 						onFinishListener.onFinish((JSONObject)obj);
 					}
-				}else{
+				}else if(obj instanceof JSONArray){
 					if(onParseJSONArrayListener != null && onParseJSONArrayListener.onParse((JSONArray)obj) != null){
 						Object parsedObj = onParseJSONArrayListener.onParse((JSONArray)obj);
 						if(parsedObj instanceof JSONObject){
@@ -112,6 +114,8 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 					}else{
 						onFinishListener.onFinish((JSONArray)obj);
 					}
+				}else{	//	other customize class
+					onFinishListener.onFinish(obj);
 				}
 			}else
 				Log.e(tag,"OnLoadJsonFinishListener is Null | You need to implement OnLoadJsonFinishListener");
@@ -139,12 +143,21 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 			if(socketTimeout != -1)
 				HttpConnectionParams.setSoTimeout(httpParameters, socketTimeout);
 			
-			if(response.getStatusLine().getStatusCode() == HttpStatus.SC_OK){			
+			if(response.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
 				String responseStr = EntityUtils.toString(response.getEntity());
-				if(responseStr.substring(0, 1).equals("{"))
-					object = new JSONObject(responseStr);
-				else if(responseStr.substring(0, 1).equals("[")){
-					object = new JSONArray(responseStr);
+				
+				if(typeOfT != null){
+					Gson gson = new Gson();
+					object = gson.fromJson(responseStr, typeOfT);
+				}else if(classOfT != null){
+					Gson gson = new Gson();
+					object = gson.fromJson(responseStr, classOfT);
+				}else{
+					if(responseStr.substring(0, 1).equals("{"))
+						object = new JSONObject(responseStr);
+					else if(responseStr.substring(0, 1).equals("[")){
+						object = new JSONArray(responseStr);
+					}
 				}
 			}else{
 				Log.e(tag,"Http Connection Error. Status Code : " + response.getStatusLine().getStatusCode());
@@ -165,6 +178,11 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 			e.toString();
 			exception = e;
 		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			e.toString();
+			exception = e;
+		} catch (Exception e){
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			e.toString();
