@@ -22,11 +22,13 @@ import android.util.Log;
 public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 	final private String tag = "crazyma";
 	
-	private String urlStr;	
+	private String urlStr,errorDescription;
+	private Exception exception;
 	private int connectionTimeout,socketTimeout;
 	private OnFinishLoadJsonListener onFinishListener;	
 	private OnParseJSONObjectListener onParseJSONObjectListener;
 	private OnParseJSONArrayListener onParseJSONArrayListener;
+	private OnTaskFailListener onTaskFailListener;
 	
 	public LoadJsonTask(){
 		init();
@@ -54,8 +56,10 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 		Object obj = null;
 		if(urlStr != null)
 			obj = onDownload();		
-		else
-			Log.e(tag,"Url is null");
+		else{
+			Log.e(tag,"Url is null");			
+			errorDescription = "Url is null";
+		}
 		
 		return obj;
 	}
@@ -81,6 +85,7 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 							onFinishListener.onFinish(str);
 						}else{
 							Log.e(tag,"Reture Value from OnParseJSONObjectListener is undefined");
+							errorDescription = "Reture Value from OnParseJSONObjectListener is undefined";
 						}
 					}else{
 						onFinishListener.onFinish((JSONObject)obj);
@@ -99,6 +104,7 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 							onFinishListener.onFinish(str);
 						}else{
 							Log.e(tag,"Reture Value from OnParseJSONArrayListener is undefined");
+							errorDescription = "Reture Value from OnParseJSONArrayListener is undefined";
 						}
 					}else{
 						onFinishListener.onFinish((JSONArray)obj);
@@ -106,16 +112,20 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 				}
 			}else
 				Log.e(tag,"OnLoadJsonFinishListener is Null | You need to implement OnLoadJsonFinishListener");
+				errorDescription = "OnLoadJsonFinishListener is Null | You need to implement OnLoadJsonFinishListener";
 		}else{
 			Log.e(tag,"onPostExecute Result Parameter is Null | The response is not a JSONObject or a JSONArray");
+			errorDescription = "OnLoadJsonFinishListener is Null | You need to implement OnLoadJsonFinishListener";
+		}
+		
+		if(onTaskFailListener != null && !(errorDescription == null && exception == null)){
+			onTaskFailListener.onTaskFail(errorDescription, exception);
 		}
 	}
 	
 	protected Object onDownload(){
 		HttpGet request = new HttpGet(urlStr);
 		Object object = null;
-//		JSONObject jsonObj = null;
-//		JSONArray jsonArray = null;
 
 		try {
 			HttpResponse response = new DefaultHttpClient().execute(request);
@@ -140,19 +150,22 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			e.toString();
+			exception = e;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			e.toString();
+			exception = e;
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			e.toString();
+			exception = e;
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			e.toString();
-			Log.e(tag,"JSONException : " + e.toString());
+			exception = e;
 		}
 		return object;
 	}
@@ -191,4 +204,13 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 		this.urlStr = urlStr;
 	}
 
+	public OnTaskFailListener getOnTaskFailListener() {
+		return onTaskFailListener;
+	}
+
+	public void setOnTaskFailListener(OnTaskFailListener onTaskFailListener) {
+		this.onTaskFailListener = onTaskFailListener;
+	}
+
+	
 }
