@@ -7,6 +7,7 @@ import tw.crazyma.loadjsontask.LoadJsonTask;
 import tw.crazyma.loadjsontask.OnFinishLoadJsonListener;
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
 
@@ -27,6 +28,7 @@ public class Main extends Activity {
         
         LoadJsonTask task = new LoadJsonTask();
         task.setUrlStr(urlStr);
+        task.setTypeOfT(DataSet.class);
         task.setOnFinishLoadJsonListener(onFinishListener);
         task.execute();
     }
@@ -54,7 +56,9 @@ public class Main extends Activity {
 		@Override
 		public void onFinish(Object resultObject) {
 			// TODO Auto-generated method stub
-			
+			Log.v("crazyma","!!!!!!!!!!!!!!!!!!!!!!!");
+			DataSet dataSet = (DataSet) resultObject;
+			textView.setText(dataSet.toString());
 		}
     	
     };
