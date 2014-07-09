@@ -1,6 +1,7 @@
 package tw.crazyma.loadjsontask;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -29,6 +30,8 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 	private OnParseJSONObjectListener onParseJSONObjectListener;
 	private OnParseJSONArrayListener onParseJSONArrayListener;
 	private OnTaskFailListener onTaskFailListener;
+	private Type typeOfT;
+	private Class<Type> classOfT;
 	
 	public LoadJsonTask(){
 		init();
@@ -211,6 +214,24 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 	public void setOnTaskFailListener(OnTaskFailListener onTaskFailListener) {
 		this.onTaskFailListener = onTaskFailListener;
 	}
+
+	public Type getTypeOfT() {
+		return typeOfT;
+	}
+
+	public void setTypeOfT(Type typeOfT) {
+		this.typeOfT = typeOfT;
+	}
+
+	public Class<Type> getClassOfT() {
+		return classOfT;
+	}
+
+	public void setClassOfT(Class<Type> classOfT) {
+		this.classOfT = classOfT;
+	}
+	
+	
 
 	
 }
