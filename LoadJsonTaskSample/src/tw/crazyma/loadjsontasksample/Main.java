@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import tw.crazyma.loadjsontask.LoadJsonTask;
 import tw.crazyma.loadjsontask.OnFinishLoadJsonListener;
+import tw.crazyma.loadjsontask.OnParseJSONArrayListener;
 import tw.crazyma.loadjsontask.OnParseJSONObjectListener;
 import android.app.Activity;
 import android.os.Bundle;
@@ -28,7 +29,8 @@ public class Main extends Activity {
 		
 		LoadJsonTask task = new LoadJsonTask();
 		task.setUrlStr(urlStr);
-//		task.setOnParseJSONObjectListener(onParseListener);	//	optional
+//		task.setOnParseJSONObjectListener(onParseJSONObjectListener);	//	optional
+//		task.setOnParseJSONArrayListener(onParseJSONArrayListener);	//optional
 		task.setOnFinishLoadJsonListener(onFinishListener);
 		
 		task.execute();
@@ -41,7 +43,7 @@ public class Main extends Activity {
 		return true;
 	}
 	
-	private OnParseJSONObjectListener onParseListener = new OnParseJSONObjectListener(){
+	private OnParseJSONObjectListener onParseJSONObjectListener = new OnParseJSONObjectListener(){
 
 		@Override
 		public Object onParse(JSONObject jsonObj) {
@@ -54,6 +56,23 @@ public class Main extends Activity {
 				e.printStackTrace();
 			}
 			return null;
+		}
+		
+	};
+	
+	private OnParseJSONArrayListener onParseJSONArrayListener = new OnParseJSONArrayListener(){
+
+		@Override
+		public Object onParse(JSONArray jsonAry) {
+			// TODO Auto-generated method stub
+			String str = null;
+			try {
+				str = (String)jsonAry.get(0);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return str;
 		}
 		
 	};
