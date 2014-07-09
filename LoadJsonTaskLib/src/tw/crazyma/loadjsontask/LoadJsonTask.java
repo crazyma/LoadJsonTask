@@ -19,13 +19,14 @@ import org.json.JSONObject;
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class LoadJsonTask extends AsyncTask<Void, Void, JSONObject> {
+public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 	final private String tag = "crazyma";
 	
 	private String urlStr;	
 	private int connectionTimeout,socketTimeout;
-	private OnFinishLoadJsonListener onFinishListener;
-	private OnParseJsonListener onParseJsonListener;
+	private OnFinishLoadJsonListener onFinishListener;	
+	private OnParseJSONObjectListener onParseJSONObjectListener;
+	private OnParseJSONArrayListener onParseJSONArrayListener;
 	
 	public LoadJsonTask(){
 		init();
@@ -47,55 +48,74 @@ public class LoadJsonTask extends AsyncTask<Void, Void, JSONObject> {
 	}
 	
 	@Override
-	protected JSONObject doInBackground(Void... params) {
+	protected Object doInBackground(Void... params) {
 		// TODO Auto-generated method stub
 		Log.d(tag,"LoadJsonTask | onInBackground");
-		JSONObject jsonObj = null;
+		Object obj = null;
 		if(urlStr != null)
-			jsonObj = onDownload();		
+			obj = onDownload();		
 		else
 			Log.e(tag,"Url is null");
 		
-		return jsonObj;
+		return obj;
 	}
 
 	@Override
-	protected void onPostExecute(JSONObject jsonObj) {
+	protected void onPostExecute(Object obj) {
 		// TODO Auto-generated method stub
-		super.onPostExecute(jsonObj);
+		super.onPostExecute(obj);
 		Log.d(tag,"LoadJsonTask | onPostExecute");
-		if(jsonObj != null){
-			if(onFinishListener != null)
-				if(onParseJsonListener != null && onParseJsonListener.onParse(jsonObj) != null){
-					Object obj = onParseJsonListener.onParse(jsonObj);
-					if(obj != null){
-						if(obj instanceof JSONObject){
-							JSONObject jObj = (JSONObject) obj;
+		if(obj != null){
+			if(onFinishListener != null){
+				if(obj instanceof JSONObject){
+					if(onParseJSONObjectListener != null && onParseJSONObjectListener.onParse((JSONObject)obj) != null){
+						Object parsedObj = onParseJSONObjectListener.onParse((JSONObject)obj);
+						if(parsedObj instanceof JSONObject){
+							JSONObject jObj = (JSONObject) parsedObj;
 							onFinishListener.onFinish(jObj);
-						}else if(obj instanceof JSONArray){
-							JSONArray jAry = (JSONArray) obj;
+						}else if(parsedObj instanceof JSONArray){
+							JSONArray jAry = (JSONArray) parsedObj;
 							onFinishListener.onFinish(jAry);
-						}else if(obj instanceof String){
-							String str = (String) obj;
+						}else if(parsedObj instanceof String){
+							String str = (String) parsedObj;
 							onFinishListener.onFinish(str);
 						}else{
-							Log.e(tag,"Reture Value from OnParsejsonListener id undefined");
+							Log.e(tag,"Reture Value from OnParseJSONObjectListener is undefined");
 						}
-					}else
-						Log.e(tag,"ParseJsonListener Result is Null");
+					}else{
+						onFinishListener.onFinish((JSONObject)obj);
+					}
 				}else{
-					onFinishListener.onFinish(jsonObj);
+					if(onParseJSONArrayListener != null && onParseJSONArrayListener.onParse((JSONArray)obj) != null){
+						Object parsedObj = onParseJSONArrayListener.onParse((JSONArray)obj);
+						if(parsedObj instanceof JSONObject){
+							JSONObject jObj = (JSONObject) parsedObj;
+							onFinishListener.onFinish(jObj);
+						}else if(parsedObj instanceof JSONArray){
+							JSONArray jAry = (JSONArray) parsedObj;
+							onFinishListener.onFinish(jAry);
+						}else if(parsedObj instanceof String){
+							String str = (String) parsedObj;
+							onFinishListener.onFinish(str);
+						}else{
+							Log.e(tag,"Reture Value from OnParseJSONArrayListener is undefined");
+						}
+					}else{
+						onFinishListener.onFinish((JSONArray)obj);
+					}
 				}
-			else
-				Log.w(tag,"OnLoadJsonFinishListener is Null");
+			}else
+				Log.e(tag,"OnLoadJsonFinishListener is Null | You need to implement OnLoadJsonFinishListener");
 		}else{
-			Log.e(tag,"onPostExecute Result Parameter is Null");
+			Log.e(tag,"onPostExecute Result Parameter is Null | The response is not a JSONObject or a JSONArray");
 		}
 	}
 	
-	protected JSONObject onDownload(){
+	protected Object onDownload(){
 		HttpGet request = new HttpGet(urlStr);
-		JSONObject jsonObj = null;
+		Object object = null;
+//		JSONObject jsonObj = null;
+//		JSONArray jsonArray = null;
 
 		try {
 			HttpResponse response = new DefaultHttpClient().execute(request);
@@ -106,9 +126,13 @@ public class LoadJsonTask extends AsyncTask<Void, Void, JSONObject> {
 			if(socketTimeout != -1)
 				HttpConnectionParams.setSoTimeout(httpParameters, socketTimeout);
 			
-			if(response.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
-				jsonObj = new JSONObject(EntityUtils.toString(response.getEntity()));
-				Log.i(tag,jsonObj.toString());
+			if(response.getStatusLine().getStatusCode() == HttpStatus.SC_OK){			
+				String responseStr = EntityUtils.toString(response.getEntity());
+				if(responseStr.substring(0, 1).equals("{"))
+					object = new JSONObject(responseStr);
+				else if(responseStr.substring(0, 1).equals("[")){
+					object = new JSONArray(responseStr);
+				}
 			}else{
 				Log.e(tag,"Http Connection Error. Status Code : " + response.getStatusLine().getStatusCode());
 			}
@@ -128,8 +152,9 @@ public class LoadJsonTask extends AsyncTask<Void, Void, JSONObject> {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			e.toString();
+			Log.e(tag,"JSONException : " + e.toString());
 		}
-		return jsonObj;
+		return object;
 	}
 	
 	public OnFinishLoadJsonListener getOnFinishListener() {
@@ -140,12 +165,22 @@ public class LoadJsonTask extends AsyncTask<Void, Void, JSONObject> {
 		this.onFinishListener = onFinishListener;
 	}
 	
-	public OnParseJsonListener getOnParseJsonListener() {
-		return onParseJsonListener;
+	public OnParseJSONObjectListener getOnParseJSONObjectListener() {
+		return onParseJSONObjectListener;
 	}
 
-	public void setOnParseJsonListener(OnParseJsonListener onParseJsonListener) {
-		this.onParseJsonListener = onParseJsonListener;
+	public void setOnParseJSONObjectListener(
+			OnParseJSONObjectListener onParseJSONObjectListener) {
+		this.onParseJSONObjectListener = onParseJSONObjectListener;
+	}
+
+	public OnParseJSONArrayListener getOnParseJSONArrayListener() {
+		return onParseJSONArrayListener;
+	}
+
+	public void setOnParseJSONArrayListener(
+			OnParseJSONArrayListener onParseJSONArrayListener) {
+		this.onParseJSONArrayListener = onParseJSONArrayListener;
 	}
 
 	public String getUrlStr() {

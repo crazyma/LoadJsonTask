@@ -6,7 +6,7 @@ import org.json.JSONObject;
 
 import tw.crazyma.loadjsontask.LoadJsonTask;
 import tw.crazyma.loadjsontask.OnFinishLoadJsonListener;
-import tw.crazyma.loadjsontask.OnParseJsonListener;
+import tw.crazyma.loadjsontask.OnParseJSONObjectListener;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -15,8 +15,8 @@ import android.widget.TextView;
 public class Main extends Activity {
 	
 	//	This address might be not working. You can just change into your own Address to get the JSON format datas.
-	final String urlStr = "http://crazyma.comli.com/json/test.php";
-	
+	final String urlStr = "http://crazyma.comli.com/json/array_test.php";
+//	final String urlStr = "http://crazyma.comli.com/json/test.php";
 	private TextView text;
 
 	@Override
@@ -28,7 +28,7 @@ public class Main extends Activity {
 		
 		LoadJsonTask task = new LoadJsonTask();
 		task.setUrlStr(urlStr);
-		task.setOnParseJsonListener(onParseListener);	//	optional
+//		task.setOnParseJSONObjectListener(onParseListener);	//	optional
 		task.setOnFinishLoadJsonListener(onFinishListener);
 		
 		task.execute();
@@ -41,7 +41,7 @@ public class Main extends Activity {
 		return true;
 	}
 	
-	private OnParseJsonListener onParseListener = new OnParseJsonListener(){
+	private OnParseJSONObjectListener onParseListener = new OnParseJSONObjectListener(){
 
 		@Override
 		public Object onParse(JSONObject jsonObj) {
