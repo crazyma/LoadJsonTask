@@ -10,16 +10,15 @@ import tw.crazyma.loadjsontasklib2.OnParseJSONArrayListener;
 import tw.crazyma.loadjsontasklib2.OnParseJSONObjectListener;
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.TimingLogger;
 import android.view.Menu;
 import android.widget.TextView;
 
 public class Main extends Activity {
 	
 	//	This address might be not working. You can just change into your own Address to get the JSON format datas.
-	final String urlStr = "http://crazyma.comli.com/json/long_json_array.php";
+//	final String urlStr = "http://crazyma.comli.com/json/long_json_array.php"; 
 //	final String urlStr = "http://crazyma.comli.com/json/array_test.php";
-//	final String urlStr = "http://crazyma.comli.com/json/test.php";
+	final String urlStr = "http://crazyma.comli.com/json/test.php";
 	private TextView text;
 
 	@Override

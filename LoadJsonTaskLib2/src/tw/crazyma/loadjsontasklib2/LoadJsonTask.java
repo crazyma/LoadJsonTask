@@ -2,33 +2,26 @@ package tw.crazyma.loadjsontasklib2;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.os.AsyncTask;
 import android.util.Log;
-import android.util.TimingLogger;
 
 import com.google.gson.Gson;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
 
 public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 
-	final private String tag = "crazyma";
-	private TimingLogger timings;
-	
+	final private String tag = "crazyma";	
 
 	private String urlStr,errorDescription;
 	private Exception exception;
@@ -64,7 +57,6 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 	protected Object doInBackground(Void... params) {
 		// TODO Auto-generated method stub
 		Log.d(tag,"LoadJsonTask | onInBackground");
-		timings = new TimingLogger("crazyma","LoadJsonTask");
 		Object obj = null;
 		if(urlStr != null)
 			obj = onDownload();		
@@ -81,7 +73,6 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 		// TODO Auto-generated method stub
 		super.onPostExecute(obj);
 		Log.d(tag,"LoadJsonTask | onPostExecute");
-		timings.addSplit("onPostExecute");
 		if(obj != null){
 			if(onFinishListener != null){
 				if(obj instanceof JSONObject){
@@ -136,26 +127,23 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 		if(onTaskFailListener != null && !(errorDescription == null && exception == null)){
 			onTaskFailListener.onTaskFail(errorDescription, exception);
 		}
-		timings.dumpToLog();
 	}
 	
 	protected Object onDownload(){		
-		timings.addSplit("onDownload");
-		HttpGet request = new HttpGet(urlStr);
 		Object object = null;
+		OkHttpClient client = new OkHttpClient();
+		if(connectionTimeout != -1){
+			client.setConnectTimeout(connectionTimeout, TimeUnit.SECONDS);
+		}
+		Request request = new Request.Builder()
+	      .url(urlStr)
+	      .build();
 
 		try {
+			Response response = client.newCall(request).execute();
 			
-			HttpResponse response = new DefaultHttpClient().execute(request);
-			HttpParams httpParameters = new BasicHttpParams();
-			if(connectionTimeout != -1)
-				HttpConnectionParams.setConnectionTimeout(httpParameters, connectionTimeout);
-			
-			if(socketTimeout != -1)
-				HttpConnectionParams.setSoTimeout(httpParameters, socketTimeout);
-			
-			if(response.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
-				String responseStr = EntityUtils.toString(response.getEntity());
+			if(response.isSuccessful()){
+				String responseStr = response.body().string();
 				
 				if(typeOfT != null){
 					Gson gson = new Gson();
@@ -171,7 +159,7 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 					}
 				}
 			}else{
-				Log.e(tag,"Http Connection Error. Status Code : " + response.getStatusLine().getStatusCode());
+				Log.e(tag,"Http Connection Error. Status Code : " + response.code()); 
 			}
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
@@ -199,7 +187,6 @@ public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 			e.toString();
 			exception = e;
 		}		
-//		timings.dumpToLog();
 		return object;
 	}
 	
