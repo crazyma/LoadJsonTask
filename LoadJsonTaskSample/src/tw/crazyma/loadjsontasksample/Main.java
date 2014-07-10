@@ -10,13 +10,14 @@ import tw.crazyma.loadjsontasklib2.OnParseJSONArrayListener;
 import tw.crazyma.loadjsontasklib2.OnParseJSONObjectListener;
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.TimingLogger;
 import android.view.Menu;
 import android.widget.TextView;
 
 public class Main extends Activity {
 	
 	//	This address might be not working. You can just change into your own Address to get the JSON format datas.
-	final String urlStr = "http://www.jabbar.tw/crystal/api2/bsquery.php?qty=mainlist&lat=24.564987&lng=120.821915";
+	final String urlStr = "http://crazyma.comli.com/json/long_json_array.php";
 //	final String urlStr = "http://crazyma.comli.com/json/array_test.php";
 //	final String urlStr = "http://crazyma.comli.com/json/test.php";
 	private TextView text;
@@ -33,8 +34,8 @@ public class Main extends Activity {
 //		task.setOnParseJSONObjectListener(onParseJSONObjectListener);	//	optional
 //		task.setOnParseJSONArrayListener(onParseJSONArrayListener);	//optional
 		task.setOnFinishLoadJsonListener(onFinishListener);
-		
-		task.execute();
+				
+		task.execute();		
 	}
 
 	@Override

@@ -19,14 +19,17 @@ import org.json.JSONObject;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.util.TimingLogger;
 
 import com.google.gson.Gson;
 
 
 public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
 
-final private String tag = "crazyma";
+	final private String tag = "crazyma";
+	private TimingLogger timings;
 	
+
 	private String urlStr,errorDescription;
 	private Exception exception;
 	private int connectionTimeout,socketTimeout;
@@ -36,6 +39,7 @@ final private String tag = "crazyma";
 	private OnTaskFailListener onTaskFailListener;
 	private Type typeOfT;
 	private Class<Type> classOfT;
+	
 	
 	public LoadJsonTask(){
 		init();
@@ -60,6 +64,7 @@ final private String tag = "crazyma";
 	protected Object doInBackground(Void... params) {
 		// TODO Auto-generated method stub
 		Log.d(tag,"LoadJsonTask | onInBackground");
+		timings = new TimingLogger("crazyma","LoadJsonTask");
 		Object obj = null;
 		if(urlStr != null)
 			obj = onDownload();		
@@ -76,6 +81,7 @@ final private String tag = "crazyma";
 		// TODO Auto-generated method stub
 		super.onPostExecute(obj);
 		Log.d(tag,"LoadJsonTask | onPostExecute");
+		timings.addSplit("onPostExecute");
 		if(obj != null){
 			if(onFinishListener != null){
 				if(obj instanceof JSONObject){
@@ -130,13 +136,16 @@ final private String tag = "crazyma";
 		if(onTaskFailListener != null && !(errorDescription == null && exception == null)){
 			onTaskFailListener.onTaskFail(errorDescription, exception);
 		}
+		timings.dumpToLog();
 	}
 	
-	protected Object onDownload(){
+	protected Object onDownload(){		
+		timings.addSplit("onDownload");
 		HttpGet request = new HttpGet(urlStr);
 		Object object = null;
 
 		try {
+			
 			HttpResponse response = new DefaultHttpClient().execute(request);
 			HttpParams httpParameters = new BasicHttpParams();
 			if(connectionTimeout != -1)
@@ -189,7 +198,8 @@ final private String tag = "crazyma";
 			e.printStackTrace();
 			e.toString();
 			exception = e;
-		}
+		}		
+//		timings.dumpToLog();
 		return object;
 	}
 	
