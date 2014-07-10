@@ -1,4 +1,4 @@
-package tw.crazyma.loadjsontask;
+package tw.crazyma.loadjsontasklib2;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -22,8 +22,10 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 
+
 public class LoadJsonTask extends AsyncTask<Void, Void, Object> {
-	final private String tag = "crazyma";
+
+final private String tag = "crazyma";
 	
 	private String urlStr,errorDescription;
 	private Exception exception;
